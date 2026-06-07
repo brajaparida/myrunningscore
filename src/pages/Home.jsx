@@ -5,28 +5,63 @@ import { searchRunners, totalRunners } from '../data/useData.js'
 const BIB_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScTxT_gG9vtjZCRNi3oPCg3erLbUkk3sGgmc1elc87l6qIhAg/viewform'
 
 function ScoreGauge() {
+  // Each segment uses strokeDasharray to create clean gaps between zones
+  // Full arc circumference at r=110 is 2*PI*110 = 691. Half arc = 345.6
+  // 5 equal zones = 345.6/5 = 69.1 each. Gap = 4px between segments
+  const R = 110
+  const cx = 140, cy = 140
+  const total = Math.PI * R  // half circle arc length = 345.6
+  const gap = 5
+  const seg = (total - gap * 4) / 5  // each segment length
+
+  // strokeDasharray: [seg, total] with strokeDashoffset to position each
+  const segs = [
+    { color: '#ef4444', offset: 0 },
+    { color: '#f97316', offset: seg + gap },
+    { color: '#eab308', offset: (seg + gap) * 2 },
+    { color: '#22c55e', offset: (seg + gap) * 3 },
+    { color: '#16a34a', offset: (seg + gap) * 4 },
+  ]
+
   return (
-    <svg width="280" height="155" viewBox="0 0 280 155" className="mx-auto">
-      <path d="M 30 140 A 110 110 0 0 1 69.6 57.4" fill="none" stroke="#ef4444" strokeWidth="22" strokeLinecap="butt"/>
-      <path d="M 69.6 57.4 A 110 110 0 0 1 140 30" fill="none" stroke="#f97316" strokeWidth="22" strokeLinecap="butt"/>
-      <path d="M 140 30 A 110 110 0 0 1 210.4 57.4" fill="none" stroke="#eab308" strokeWidth="22" strokeLinecap="butt"/>
-      <path d="M 210.4 57.4 A 110 110 0 0 1 250 140" fill="none" stroke="#22c55e" strokeWidth="22" strokeLinecap="butt"/>
-      <path d="M 245 118 A 110 110 0 0 1 250 140" fill="none" stroke="#16a34a" strokeWidth="22" strokeLinecap="round"/>
-      <line x1="140" y1="140" x2="69" y2="57" stroke="white" strokeWidth="2"/>
-      <line x1="140" y1="140" x2="140" y2="30" stroke="white" strokeWidth="2"/>
-      <line x1="140" y1="140" x2="211" y2="57" stroke="white" strokeWidth="2"/>
-      <g transform="translate(140,140)">
-        <line x1="0" y1="0" x2="-55" y2="-80" stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round"/>
-        <circle cx="0" cy="0" r="7" fill="#1e293b"/>
+    <svg width="280" height="158" viewBox="0 0 280 158" className="mx-auto">
+      {/* Background track */}
+      <path
+        d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`}
+        fill="none" stroke="#f1f5f9" strokeWidth="22" strokeLinecap="butt"
+      />
+      {/* Coloured segments using dasharray trick */}
+      {segs.map((s, i) => (
+        <path
+          key={i}
+          d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`}
+          fill="none"
+          stroke={s.color}
+          strokeWidth="22"
+          strokeLinecap="butt"
+          strokeDasharray={`${seg} ${total}`}
+          strokeDashoffset={-s.offset}
+          transform={`rotate(180 ${cx} ${cy})`}
+        />
+      ))}
+      {/* Needle — orange color */}
+      <g transform={`translate(${cx},${cy})`}>
+        <line x1="0" y1="0" x2="-52" y2="-76"
+          stroke="#f97316" strokeWidth="3" strokeLinecap="round"/>
+        <circle cx="0" cy="0" r="8" fill="#f97316"/>
         <circle cx="0" cy="0" r="4" fill="white"/>
       </g>
-      <text x="140" y="116" textAnchor="middle" fontSize="26" fontWeight="500" fill="#1e293b" fontFamily="sans-serif">650</text>
-      <text x="140" y="132" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">Good Runner</text>
-      <text x="22" y="152" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">300</text>
-      <text x="58" y="46" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">420</text>
-      <text x="140" y="20" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">550</text>
-      <text x="222" y="46" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">700</text>
-      <text x="258" y="152" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">900</text>
+      {/* Score text */}
+      <text x={cx} y={cy - 22} textAnchor="middle" fontSize="28" fontWeight="600"
+        fill="#1e293b" fontFamily="sans-serif">650</text>
+      <text x={cx} y={cy - 6} textAnchor="middle" fontSize="10"
+        fill="#94a3b8" fontFamily="sans-serif">Good Runner</text>
+      {/* Scale numbers */}
+      <text x="18"  y="152" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">300</text>
+      <text x="62"  y="50"  textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">420</text>
+      <text x={cx}  y="18"  textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">550</text>
+      <text x="218" y="50"  textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">700</text>
+      <text x="262" y="152" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">900</text>
     </svg>
   )
 }
