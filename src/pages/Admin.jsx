@@ -27,6 +27,7 @@ function buildRunners() {
       : `${m}:${String(s).padStart(2,'0')}`
     runners.push({
       name:      results[0].name,
+      ubib:      results[0].ubib || '—',
       score,
       tier,
       raceCount: results.length,
@@ -99,9 +100,9 @@ export default function Admin() {
   }
 
   function exportCSV() {
-    const headers = ['Name','Score','Tier','Races','Best Time','Cities','Gender','Age Group']
+    const headers = ['UBIB','Name','Score','Tier','Races','Best Time','Cities','Gender','Age Group']
     const rows = filtered.map(r =>
-      [r.name, r.score, r.tier, r.raceCount, r.bestTime, r.cities, r.gender, r.ageGroup]
+      [r.ubib, r.name, r.score, r.tier, r.raceCount, r.bestTime, r.cities, r.gender, r.ageGroup]
         .map(v => `"${v}"`).join(',')
     )
     const csv  = [headers.join(','), ...rows].join('\n')
@@ -236,6 +237,7 @@ export default function Admin() {
                 <tr className="bg-slate-50 border-b border-slate-200">
                   {[
                     { label: '#',          col: null        },
+                    { label: 'UBIB',       col: 'ubib'      },
                     { label: 'Name',       col: 'name'      },
                     { label: 'Score',      col: 'score'     },
                     { label: 'Tier',       col: 'tier'      },
@@ -262,6 +264,11 @@ export default function Admin() {
                   <tr key={r.name} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3 text-slate-400 text-xs">
                       {(page - 1) * PAGE_SIZE + i + 1}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-lg whitespace-nowrap">
+                        {r.ubib}
+                      </span>
                     </td>
                     <td className="px-4 py-3 font-semibold text-slate-800 whitespace-nowrap">
                       {r.name}
