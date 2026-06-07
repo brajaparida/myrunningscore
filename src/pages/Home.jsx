@@ -39,7 +39,7 @@ function ScoreGauge() {
   const needleTip   = { x: cx + 88 * Math.cos(needleRad), y: cy - 88 * Math.sin(needleRad) }
 
   return (
-    <svg width="300" height="168" viewBox="0 0 300 168" className="mx-auto">
+    <svg width="300" height="185" viewBox="0 0 300 185" className="mx-auto">
       {/* Grey background track */}
       <path d={arcPath(180, 0)} fill="none" stroke="#e2e8f0" strokeWidth={strokeW} strokeLinecap="round"/>
 
@@ -64,14 +64,14 @@ function ScoreGauge() {
       <circle cx={cx} cy={cy} r="4" fill="white"/>
 
       {/* Score */}
-      <text x={cx} y={cy + 22} textAnchor="middle" fontSize="30" fontWeight="700"
+      <text x={cx} y={cy + 34} textAnchor="middle" fontSize="30" fontWeight="700"
         fill="#1e293b" fontFamily="sans-serif">650</text>
-      <text x={cx} y={cy + 38} textAnchor="middle" fontSize="10"
+      <text x={cx} y={cy + 50} textAnchor="middle" fontSize="10"
         fill="#94a3b8" fontFamily="sans-serif">Good Runner</text>
 
       {/* Scale labels */}
-      <text x="14"  y={cy + 18} textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">300</text>
-      <text x="286" y={cy + 18} textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">900</text>
+      <text x="14"  y={cy + 34} textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">300</text>
+      <text x="286" y={cy + 34} textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">900</text>
     </svg>
   )
 }
