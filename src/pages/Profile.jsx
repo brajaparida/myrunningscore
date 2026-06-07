@@ -4,7 +4,7 @@ import { calculateScore } from '../scoring/calculator.js'
 
 const TIER_COLOR = { Elite:'text-purple-700 bg-purple-100', Strong:'text-green-700 bg-green-100',
   Good:'text-green-600 bg-green-50', Average:'text-yellow-700 bg-yellow-100', Beginner:'text-slate-600 bg-slate-100' }
-const CLAIM_FORM = 'https://forms.gle/placeholder'  // swap with your Google Form URL
+const CLAIM_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLSfcCUtkzQ54lL5sRVuPR8BKTvKjgw2A0x_jGjPPisDk_2jd9w/viewform'  // swap with your Google Form URL
 
 function ScoreGauge({ score }) {
   const pct = (score - 300) / 600
