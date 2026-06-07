@@ -1,0 +1,219 @@
+import { useParams, useNavigate } from 'react-router-dom'
+import { getRunnerResults, fmtTime } from '../data/useData.js'
+import { calculateScore } from '../scoring/calculator.js'
+
+const TIER_COLOR = { Elite:'text-purple-700 bg-purple-100', Strong:'text-green-700 bg-green-100',
+  Good:'text-green-600 bg-green-50', Average:'text-yellow-700 bg-yellow-100', Beginner:'text-slate-600 bg-slate-100' }
+const CLAIM_FORM = 'https://forms.gle/placeholder'  // swap with your Google Form URL
+
+function ScoreGauge({ score }) {
+  const pct = (score - 300) / 600
+  const C   = 2 * Math.PI * 40
+  const arc = pct * C * 0.75
+  const color = score >= 700 ? '#16a34a' : score >= 550 ? '#d97706' : '#dc2626'
+  return (
+    <svg width="110" height="110" viewBox="0 0 100 100" className="flex-shrink-0">
+      <circle cx="50" cy="50" r="40" fill="none" stroke="#f1f5f9" strokeWidth="10"/>
+      <circle cx="50" cy="50" r="40" fill="none" stroke={color} strokeWidth="10"
+        strokeDasharray={`${arc} ${C-arc}`} strokeLinecap="round"
+        transform="rotate(-210 50 50)"/>
+      <text x="50" y="44" textAnchor="middle" fontSize="20" fontWeight="700"
+        fill="#1e293b" dominantBaseline="central">{score}</text>
+      <text x="50" y="62" textAnchor="middle" fontSize="9" fill="#94a3b8"
+        dominantBaseline="central">out of 900</text>
+    </svg>
+  )
+}
+
+function Bar({ label, score, color }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-slate-500 w-28 flex-shrink-0">{label}</span>
+      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-700"
+          style={{ width:`${score}%`, background: color }}/>
+      </div>
+      <span className="text-xs font-semibold text-slate-700 w-7 text-right">{score}</span>
+    </div>
+  )
+}
+
+export default function Profile() {
+  const { name }   = useParams()
+  const navigate   = useNavigate()
+  const decoded    = decodeURIComponent(name)
+  const results    = getRunnerResults(decoded)
+
+  if (!results) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-slate-50">
+      <p className="text-slate-500">Runner not found.</p>
+      <button onClick={() => navigate('/')}
+        className="text-blue-500 underline text-sm">← Back to search</button>
+    </div>
+  )
+
+  const { score, tier, breakdown, percentile } = calculateScore(results)
+  const sorted   = [...results].sort((a,b) => a.date.localeCompare(b.date))
+  const bestRes  = results.reduce((b,r) => r.secs < b.secs ? r : b, results[0])
+  const years    = [...new Set(results.map(r => new Date(r.date).getFullYear()))]
+  const cities   = [...new Set(results.map(r => r.city))]
+  const raceCount= results.length
+  const rpy      = (raceCount / Math.max(years.length,1)).toFixed(1)
+
+  // trend
+  let trendPct = null
+  if (sorted.length >= 2) {
+    const mid   = Math.floor(sorted.length/2)
+    const early = sorted.slice(0,mid).reduce((s,r)=>s+r.secs,0)/mid
+    const late  = sorted.slice(mid).reduce((s,r)=>s+r.secs,0)/(sorted.length-mid)
+    trendPct    = Math.round(((early-late)/early)*100)
+  }
+
+  const catLabel = { full:'Full Marathon', half:'Half Marathon', '10k':'10K', '5k':'5K', '3k':'3K', other:'Race' }
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-xl mx-auto px-4 py-6">
+
+        {/* Top bar */}
+        <div className="flex items-center justify-between mb-3">
+          <button onClick={() => navigate('/')}
+            className="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1">
+            ← Search
+          </button>
+          <span className="text-sm font-bold text-slate-700">🏃 MyRunning Score</span>
+          <a href={CLAIM_FORM} target="_blank" rel="noreferrer"
+            className="text-xs border border-slate-300 rounded-lg px-3 py-1.5
+                       text-slate-600 hover:bg-slate-100 transition-colors">
+            Claim profile
+          </a>
+        </div>
+
+        {/* Unverified notice */}
+        <p className="text-xs text-slate-400 mb-4 flex items-center gap-1">
+          <span>ℹ️</span> Public data — not yet claimed by runner
+        </p>
+
+        {/* Score hero */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-3 flex items-center gap-5 shadow-sm">
+          <ScoreGauge score={score}/>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-bold text-slate-800 truncate">{decoded}</h1>
+            <p className="text-sm text-slate-500 mt-0.5">
+              {cities.join(' · ')} · Since {Math.min(...years)}
+            </p>
+            <div className="mt-3">
+              <span className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${TIER_COLOR[tier]}`}>
+                🏅 {tier} Runner
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-2">
+              300 Poor · 550 Good · 700 Strong · 850+ Elite
+            </p>
+          </div>
+        </div>
+
+        {/* KPI tiles */}
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          {[
+            { label:'Finishes',     val: raceCount,                        sub:'races'        },
+            { label:'Best time',    val: fmtTime(bestRes.secs),            sub: bestRes.race.split(' ')[0] },
+            { label:'Active years', val: years.length,                     sub:`${Math.min(...years)}–${Math.max(...years)}`},
+            { label:'Races/year',   val: rpy,                              sub:'avg'          },
+            { label:'Cities',       val: cities.length,                    sub: cities.join(', ')},
+            { label:'Trend',
+              val: trendPct !== null ? `${trendPct>=0?'↑':'↓'} ${Math.abs(trendPct)}%` : '—',
+              sub: trendPct!==null ? (trendPct>=0?'improving':'slower') : 'not enough data',
+              green: trendPct !== null && trendPct >= 0 },
+          ].map(t => (
+            <div key={t.label} className="bg-slate-100 rounded-xl p-3">
+              <p className="text-xs text-slate-500">{t.label}</p>
+              <p className={`text-lg font-bold mt-0.5 ${t.green ? 'text-green-600' : 'text-slate-800'}`}>
+                {t.val}
+              </p>
+              <p className="text-xs text-slate-400 truncate">{t.sub}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Score breakdown */}
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+          Score breakdown
+        </p>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-3 shadow-sm space-y-3">
+          {Object.entries(breakdown).map(([k, kpi]) => (
+            <Bar key={k} label={kpi.label} score={kpi.score}
+              color={kpi.score >= 65 ? '#16a34a' : kpi.score >= 40 ? '#d97706' : '#dc2626'}/>
+          ))}
+        </div>
+
+        {/* Percentile */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 mb-3 shadow-sm">
+          <p className="text-sm font-semibold text-slate-800 mb-3">
+            Top {100 - percentile}% of runners in this dataset
+          </p>
+          <div className="relative h-4 rounded-full overflow-hidden"
+            style={{ background:'linear-gradient(to right,#bfdbfe,#bbf7d0,#fde68a,#fca5a5)'}}>
+            <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full
+                            bg-slate-800 border-2 border-white shadow transition-all duration-700"
+              style={{ left:`calc(${percentile}% - 8px)` }}/>
+          </div>
+          <div className="flex justify-between text-xs text-slate-400 mt-1">
+            <span>Bottom</span><span>Median</span><span>Top 10%</span>
+          </div>
+        </div>
+
+        {/* Race history */}
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+          Race history
+        </p>
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm mb-6">
+          {[...results].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6).map((r,i,arr) => (
+            <div key={i}
+              className={`flex items-center gap-3 px-5 py-3.5
+                         ${i < arr.length-1 ? 'border-b border-slate-100' : ''}`}>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm flex-shrink-0
+                              ${r.secs === bestRes.secs ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>
+                {r.secs === bestRes.secs ? '🏆' : '🏃'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-800 truncate">{r.race}</p>
+                <p className="text-xs text-slate-400">{r.date} · {r.city} · {catLabel[r.cat] || r.cat}</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-sm font-bold text-slate-800">{fmtTime(r.secs)}</p>
+                {r.secs === bestRes.secs && (
+                  <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-semibold">PB</span>
+                )}
+                {r.rank && r.secs !== bestRes.secs && (
+                  <p className="text-xs text-slate-400">#{r.rank}</p>
+                )}
+              </div>
+            </div>
+          ))}
+          {results.length > 6 && (
+            <div className="px-5 py-3 text-center text-xs text-slate-400">
+              +{results.length - 6} more races
+            </div>
+          )}
+        </div>
+
+        {/* Claim CTA */}
+        <div className="bg-slate-800 rounded-2xl p-5 flex items-center gap-4">
+          <div className="flex-1">
+            <p className="text-white font-semibold text-sm">Is this you? Claim your profile</p>
+            <p className="text-slate-400 text-xs mt-1">
+              Verify your data, unlock insights, and control your score
+            </p>
+          </div>
+          <a href={CLAIM_FORM} target="_blank" rel="noreferrer"
+            className="bg-blue-500 text-white text-sm rounded-xl px-4 py-2.5
+                       font-semibold hover:bg-blue-600 transition-colors whitespace-nowrap">
+            Claim →
+          </a>
+        </div>
+
+      </div>
+    </div>
+  )
+}
