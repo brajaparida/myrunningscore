@@ -5,63 +5,73 @@ import { searchRunners, totalRunners } from '../data/useData.js'
 const BIB_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScTxT_gG9vtjZCRNi3oPCg3erLbUkk3sGgmc1elc87l6qIhAg/viewform'
 
 function ScoreGauge() {
-  // Each segment uses strokeDasharray to create clean gaps between zones
-  // Full arc circumference at r=110 is 2*PI*110 = 691. Half arc = 345.6
-  // 5 equal zones = 345.6/5 = 69.1 each. Gap = 4px between segments
-  const R = 110
-  const cx = 140, cy = 140
-  const total = Math.PI * R  // half circle arc length = 345.6
-  const gap = 5
-  const seg = (total - gap * 4) / 5  // each segment length
+  // CIBIL-style gauge: smooth arc, 5 colour zones, thin sharp needle
+  // Arc goes from 180deg (left) to 0deg (right) — a perfect half circle
+  // cx=150, cy=145, r=100
+  const cx = 150, cy = 145, r = 100
+  const strokeW = 28
 
-  // strokeDasharray: [seg, total] with strokeDashoffset to position each
-  const segs = [
-    { color: '#ef4444', offset: 0 },
-    { color: '#f97316', offset: seg + gap },
-    { color: '#eab308', offset: (seg + gap) * 2 },
-    { color: '#22c55e', offset: (seg + gap) * 3 },
-    { color: '#16a34a', offset: (seg + gap) * 4 },
+  // Convert angle (0=right, 90=top, 180=left) to SVG coords
+  const pt = (deg) => {
+    const rad = (deg * Math.PI) / 180
+    return { x: cx + r * Math.cos(rad), y: cy - r * Math.sin(rad) }
+  }
+
+  // 5 zones: each 36 degrees of the 180deg arc
+  // Angles: 180→144→108→72→36→0
+  const zones = [
+    { color: '#ef4444', a1: 180, a2: 144 }, // Beginner
+    { color: '#f97316', a1: 144, a2: 108 }, // Average
+    { color: '#eab308', a1: 108, a2:  72 }, // Good
+    { color: '#22c55e', a1:  72, a2:  36 }, // Strong
+    { color: '#16a34a', a1:  36, a2:   0 }, // Elite
   ]
 
+  const arcPath = (a1, a2) => {
+    const s = pt(a1), e = pt(a2)
+    return `M ${s.x} ${s.y} A ${r} ${r} 0 0 1 ${e.x} ${e.y}`
+  }
+
+  // Needle angle for score 650: maps 300→180deg, 900→0deg
+  // 650 is (650-300)/(900-300) = 350/600 = 58.3% → angle = 180 - 58.3*180/100 = 75deg
+  const needleAngle = 180 - ((650 - 300) / 600) * 180  // = 75
+  const needleRad   = (needleAngle * Math.PI) / 180
+  const needleTip   = { x: cx + 88 * Math.cos(needleRad), y: cy - 88 * Math.sin(needleRad) }
+
   return (
-    <svg width="280" height="158" viewBox="0 0 280 158" className="mx-auto">
-      {/* Background track */}
-      <path
-        d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`}
-        fill="none" stroke="#f1f5f9" strokeWidth="22" strokeLinecap="butt"
-      />
-      {/* Coloured segments using dasharray trick */}
-      {segs.map((s, i) => (
-        <path
-          key={i}
-          d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`}
-          fill="none"
-          stroke={s.color}
-          strokeWidth="22"
-          strokeLinecap="butt"
-          strokeDasharray={`${seg} ${total}`}
-          strokeDashoffset={-s.offset}
-          transform={`rotate(180 ${cx} ${cy})`}
-        />
+    <svg width="300" height="168" viewBox="0 0 300 168" className="mx-auto">
+      {/* Grey background track */}
+      <path d={arcPath(180, 0)} fill="none" stroke="#e2e8f0" strokeWidth={strokeW} strokeLinecap="round"/>
+
+      {/* Coloured zones */}
+      {zones.map((z, i) => (
+        <path key={i} d={arcPath(z.a1, z.a2)} fill="none"
+          stroke={z.color} strokeWidth={strokeW} strokeLinecap="butt"/>
       ))}
-      {/* Needle — orange color */}
-      <g transform={`translate(${cx},${cy})`}>
-        <line x1="0" y1="0" x2="-52" y2="-76"
-          stroke="#f97316" strokeWidth="3" strokeLinecap="round"/>
-        <circle cx="0" cy="0" r="8" fill="#f97316"/>
-        <circle cx="0" cy="0" r="4" fill="white"/>
-      </g>
-      {/* Score text */}
-      <text x={cx} y={cy - 22} textAnchor="middle" fontSize="28" fontWeight="600"
+
+      {/* Rounded end caps */}
+      <circle cx={pt(180).x} cy={pt(180).y} r={strokeW/2} fill="#ef4444"/>
+      <circle cx={pt(0).x}   cy={pt(0).y}   r={strokeW/2} fill="#16a34a"/>
+
+      {/* Thin sharp needle — dark grey like CIBIL */}
+      <line
+        x1={cx} y1={cy}
+        x2={needleTip.x} y2={needleTip.y}
+        stroke="#334155" strokeWidth="2.5" strokeLinecap="round"
+      />
+      {/* Needle base circle */}
+      <circle cx={cx} cy={cy} r="7" fill="#334155"/>
+      <circle cx={cx} cy={cy} r="4" fill="white"/>
+
+      {/* Score */}
+      <text x={cx} y={cy + 22} textAnchor="middle" fontSize="30" fontWeight="700"
         fill="#1e293b" fontFamily="sans-serif">650</text>
-      <text x={cx} y={cy - 6} textAnchor="middle" fontSize="10"
+      <text x={cx} y={cy + 38} textAnchor="middle" fontSize="10"
         fill="#94a3b8" fontFamily="sans-serif">Good Runner</text>
-      {/* Scale numbers */}
-      <text x="18"  y="152" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">300</text>
-      <text x="62"  y="50"  textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">420</text>
-      <text x={cx}  y="18"  textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">550</text>
-      <text x="218" y="50"  textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">700</text>
-      <text x="262" y="152" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">900</text>
+
+      {/* Scale labels */}
+      <text x="14"  y={cy + 18} textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">300</text>
+      <text x="286" y={cy + 18} textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">900</text>
     </svg>
   )
 }
