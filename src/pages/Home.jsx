@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { searchRunners, totalRunners } from '../data/useData.js'
 
+const BIB_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScTxT_gG9vtjZCRNi3oPCg3erLbUkk3sGgmc1elc87l6qIhAg/viewform'  // replace with your BIB form link
+
 export default function Home() {
   const [query,   setQuery]   = useState('')
   const [results, setResults] = useState([])
@@ -15,6 +17,8 @@ export default function Home() {
       setResults(searchRunners(query))
     }, 200)
   }, [query])
+
+  const showCantFind = query.length >= 2
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
@@ -49,7 +53,7 @@ export default function Home() {
 
         {/* Results */}
         {results.length > 0 && (
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-4">
             {results.map((r, i) => (
               <button
                 key={r.name}
@@ -72,20 +76,75 @@ export default function Home() {
         )}
 
         {query.length >= 2 && results.length === 0 && (
-          <p className="text-center text-slate-400 text-sm mt-6">
-            No runners found. Try a different name.
+          <p className="text-center text-slate-400 text-sm mt-4 mb-4">
+            No runners found for "{query}"
           </p>
         )}
 
+        {/* Can't find yourself */}
+        {showCantFind && (
+          <div className="mb-6">
+            {/* Divider */}
+            <div className="flex items-center gap-3 my-4">
+              <div className="flex-1 h-px bg-slate-200"></div>
+              <span className="text-xs text-slate-400">Can't find yourself?</span>
+              <div className="flex-1 h-px bg-slate-200"></div>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-base">➕</span>
+                <p className="text-sm font-semibold text-slate-800">Add your race result</p>
+              </div>
+              <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                Submit your BIB number and we'll add your result within 24 hours.
+              </p>
+
+              {/* Steps */}
+              <div className="space-y-3 mb-4">
+                {[
+                  { n:'1', text: <>Submit your <span className="font-semibold text-slate-700">name, race, and BIB number</span> using the form below</> },
+                  { n:'2', text: <>Our team <span className="font-semibold text-slate-700">verifies your result</span> from official race records</> },
+                  { n:'3', text: <>You get an <span className="font-semibold text-slate-700">email notification</span> — your score is ready to claim</> },
+                ].map(s => (
+                  <div key={s.n} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs
+                                    font-semibold flex items-center justify-center flex-shrink-0 mt-0.5">
+                      {s.n}
+                    </div>
+                    <p className="text-xs text-slate-500 leading-relaxed">{s.text}</p>
+                  </div>
+                ))}
+              </div>
+
+              <a
+                href={BIB_FORM}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-blue-500
+                           text-white text-sm font-semibold rounded-xl hover:bg-blue-600
+                           transition-colors"
+              >
+                Submit my BIB number →
+              </a>
+              <p className="text-center text-xs text-slate-400 mt-2">
+                Usually processed within 24 hours
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Stats footer */}
-        <div className="mt-10 text-center space-y-1">
-          <p className="text-xs text-slate-400">
-            {totalRunners().toLocaleString()} runners · 3 races · Patna · Bengaluru
-          </p>
-          <p className="text-xs text-slate-300">
-            Data: APYK Marathon Patna · Bangalore Marathon Festival · Mile Runners Bangalore
-          </p>
-        </div>
+        {!showCantFind && (
+          <div className="mt-10 text-center space-y-1">
+            <p className="text-xs text-slate-400">
+              {totalRunners().toLocaleString()} runners · 3 races · Patna · Bengaluru
+            </p>
+            <p className="text-xs text-slate-300">
+              Data: APYK Marathon Patna · Bangalore Marathon Festival · Mile Runners Bangalore
+            </p>
+          </div>
+        )}
       </main>
 
       <footer className="py-6 text-center text-xs text-slate-300">
