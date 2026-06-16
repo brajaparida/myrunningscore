@@ -85,15 +85,15 @@ function scoreStreak(results) {
 }
 
 function getTier(score) {
-  if (score >= 850) return 'Elite'
-  if (score >= 700) return 'Strong'
-  if (score >= 550) return 'Good'
-  if (score >= 400) return 'Average'
-  return 'Beginner'
+  if (score >= 850) return 'Legend'
+  if (score >= 700) return 'Elite'
+  if (score >= 550) return 'Champion'
+  if (score >= 400) return 'Achiever'
+  return 'Runner'
 }
 
 export function calculateScore(results) {
-  if (!results?.length) return { score: 300, tier: 'Beginner', breakdown: {}, percentile: 1 }
+  if (!results?.length) return { score: 300, tier: 'Runner', breakdown: {}, percentile: 1 }
 
   const kpis = {
     finishTime:  { score: scoreFinishTime(results),   weight: 0.25, label: 'Finish time'     },

@@ -3,10 +3,21 @@ import { useState } from 'react'
 import { getRunnerResults, fmtTime } from '../data/useData.js'
 import { calculateScore } from '../scoring/calculator.js'
 
-const TIER_COLOR = { Elite:'text-purple-700 bg-purple-100', Strong:'text-green-700 bg-green-100',
-  Good:'text-green-600 bg-green-50', Average:'text-yellow-700 bg-yellow-100', Beginner:'text-slate-600 bg-slate-100' }
+const TIER_COLOR = { 
+  Legend:   'text-purple-700 bg-purple-100', 
+  Elite:    'text-green-700 bg-green-100',
+  Champion: 'text-green-600 bg-green-50', 
+  Achiever: 'text-yellow-700 bg-yellow-100', 
+  Runner:   'text-slate-600 bg-slate-100' 
+}
 const CLAIM_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLSfcCUtkzQ54lL5sRVuPR8BKTvKjgw2A0x_jGjPPisDk_2jd9w/viewform'
-const TIER_EMOJI = { Elite: '👑', Strong: '🟢', Good: '🟡', Average: '🟠', Beginner: '🔴' }
+const TIER_EMOJI = { 
+  Legend:   '👑', 
+  Elite:    '🟢', 
+  Champion: '🟡', 
+  Achiever: '🟠', 
+  Runner:   '🔴' 
+}
 
 function ScoreGauge({ score }) {
   const pct = (score - 300) / 600
@@ -94,10 +105,16 @@ function drawScoreCard({ name, score, tier, ubib, raceCount, cities, sinceYear }
   roundRect(ctx, 48, 322, 260, 44, 22); ctx.fill()
 
   // Tier text
-  const tierColors = { Elite:'#a855f7', Strong:'#22c55e', Good:'#eab308', Average:'#f97316', Beginner:'#ef4444' }
+  const tierColors = { 
+    Legend:   '#a855f7', 
+    Elite:    '#22c55e', 
+    Champion: '#eab308', 
+    Achiever: '#f97316', 
+    Runner:   '#ef4444' 
+  }
   ctx.fillStyle = tierColors[tier] || '#22c55e'
   ctx.font = 'bold 20px Arial'
-  ctx.fillText(`${TIER_EMOJI[tier] || '🏃'}  ${tier} Runner`, 70, 350)
+  ctx.fillText(`${TIER_EMOJI[tier] || '🏃'}  ${tier}`, 70, 350)
 
   // Divider
   ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1
@@ -147,7 +164,7 @@ async function handleShare({ name, score, tier, ubib, raceCount, cities, sinceYe
   return new Promise((resolve) => {
     canvas.toBlob(async (blob) => {
       const file = new File([blob], 'my-running-score.png', { type: 'image/png' })
-      const text = `My Running Score is ${score} ${TIER_EMOJI[tier] || '🏃'} — ${tier} Runner!\nWhat's yours? → myrunningscore.in 🇮🇳`
+      const text = `My Running Score is ${score} ${TIER_EMOJI[tier] || '🏃'} — ${tier}!\nWhat's yours? → myrunningscore.in 🇮🇳`
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
@@ -237,10 +254,10 @@ export default function Profile() {
             )}
             <div className="mt-2">
               <span className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${TIER_COLOR[tier]}`}>
-                🏅 {tier} Runner
+                🏅 {tier}
               </span>
             </div>
-            <p className="text-xs text-slate-300 mt-2">300 Poor · 550 Good · 700 Strong · 850+ Elite</p>
+            <p className="text-xs text-slate-300 mt-2">300 Runner · 400 Achiever · 550 Champion · 700 Elite · 850+ Legend</p>
           </div>
         </div>
 
