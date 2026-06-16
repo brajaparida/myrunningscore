@@ -5,26 +5,20 @@ import { searchRunners, totalRunners } from '../data/useData.js'
 const BIB_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScTxT_gG9vtjZCRNi3oPCg3erLbUkk3sGgmc1elc87l6qIhAg/viewform'
 
 function ScoreGauge() {
-  // CIBIL-style gauge: smooth arc, 5 colour zones, thin sharp needle
-  // Arc goes from 180deg (left) to 0deg (right) — a perfect half circle
-  // cx=150, cy=145, r=100
   const cx = 150, cy = 145, r = 100
   const strokeW = 28
 
-  // Convert angle (0=right, 90=top, 180=left) to SVG coords
   const pt = (deg) => {
     const rad = (deg * Math.PI) / 180
     return { x: cx + r * Math.cos(rad), y: cy - r * Math.sin(rad) }
   }
 
-  // 5 zones: each 36 degrees of the 180deg arc
-  // Angles: 180→144→108→72→36→0
   const zones = [
-    { color: '#ef4444', a1: 180, a2: 144 }, // Beginner
-    { color: '#f97316', a1: 144, a2: 108 }, // Average
-    { color: '#eab308', a1: 108, a2:  72 }, // Good
-    { color: '#22c55e', a1:  72, a2:  36 }, // Strong
-    { color: '#16a34a', a1:  36, a2:   0 }, // Elite
+    { color: '#ef4444', a1: 180, a2: 144 }, // Runner
+    { color: '#f97316', a1: 144, a2: 108 }, // Achiever
+    { color: '#eab308', a1: 108, a2:  72 }, // Champion
+    { color: '#22c55e', a1:  72, a2:  36 }, // Elite
+    { color: '#16a34a', a1:  36, a2:   0 }, // Legend
   ]
 
   const arcPath = (a1, a2) => {
@@ -32,44 +26,30 @@ function ScoreGauge() {
     return `M ${s.x} ${s.y} A ${r} ${r} 0 0 1 ${e.x} ${e.y}`
   }
 
-  // Needle angle for score 650: maps 300→180deg, 900→0deg
-  // 650 is (650-300)/(900-300) = 350/600 = 58.3% → angle = 180 - 58.3*180/100 = 75deg
-  const needleAngle = 180 - ((650 - 300) / 600) * 180  // = 75
+  const needleAngle = 180 - ((650 - 300) / 600) * 180
   const needleRad   = (needleAngle * Math.PI) / 180
   const needleTip   = { x: cx + 88 * Math.cos(needleRad), y: cy - 88 * Math.sin(needleRad) }
 
   return (
     <svg width="300" height="185" viewBox="0 0 300 185" className="mx-auto">
-      {/* Grey background track */}
       <path d={arcPath(180, 0)} fill="none" stroke="#e2e8f0" strokeWidth={strokeW} strokeLinecap="round"/>
-
-      {/* Coloured zones */}
       {zones.map((z, i) => (
         <path key={i} d={arcPath(z.a1, z.a2)} fill="none"
           stroke={z.color} strokeWidth={strokeW} strokeLinecap="butt"/>
       ))}
-
-      {/* Rounded end caps */}
       <circle cx={pt(180).x} cy={pt(180).y} r={strokeW/2} fill="#ef4444"/>
       <circle cx={pt(0).x}   cy={pt(0).y}   r={strokeW/2} fill="#16a34a"/>
-
-      {/* Thin sharp needle — dark grey like CIBIL */}
       <line
         x1={cx} y1={cy}
         x2={needleTip.x} y2={needleTip.y}
         stroke="#334155" strokeWidth="2.5" strokeLinecap="round"
       />
-      {/* Needle base circle */}
       <circle cx={cx} cy={cy} r="7" fill="#334155"/>
       <circle cx={cx} cy={cy} r="4" fill="white"/>
-
-      {/* Score */}
       <text x={cx} y={cy + 34} textAnchor="middle" fontSize="30" fontWeight="700"
         fill="#1e293b" fontFamily="sans-serif">650</text>
       <text x={cx} y={cy + 50} textAnchor="middle" fontSize="10"
-        fill="#94a3b8" fontFamily="sans-serif">Good Runner</text>
-
-      {/* Scale labels */}
+        fill="#94a3b8" fontFamily="sans-serif">Champion</text>
       <text x="14"  y={cy + 34} textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">300</text>
       <text x="286" y={cy + 34} textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="sans-serif">900</text>
     </svg>
@@ -219,7 +199,7 @@ export default function Home() {
               </p>
               <ScoreGauge />
               <div className="flex justify-between mt-2 px-1">
-                {['Beginner','Average','Good','Strong','Elite'].map((t,i) => (
+                {['Runner','Achiever','Champion','Elite','Legend'].map((t,i) => (
                   <span key={t} className="text-xs font-semibold"
                     style={{ color: ['#ef4444','#f97316','#eab308','#22c55e','#16a34a'][i] }}>
                     {t}
@@ -229,9 +209,9 @@ export default function Home() {
               {/* Sample runners */}
               <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
                 {[
-                  { init:'AK', name:'Abhishek Kumar', meta:'Bengaluru · 10K', score:724, tier:'Strong', sc:'text-green-500', tc:'bg-green-100 text-green-800' },
-                  { init:'KP', name:'Komal Patel',    meta:'Patna · 3K',      score:612, tier:'Good',   sc:'text-yellow-500', tc:'bg-yellow-100 text-yellow-800' },
-                  { init:'AS', name:'Arun Singh',     meta:'Bengaluru · 21K', score:490, tier:'Average',sc:'text-orange-500', tc:'bg-orange-100 text-orange-800' },
+                  { init:'AK', name:'Abhishek Kumar', meta:'Bengaluru · 10K', score:724, tier:'Elite',    sc:'text-green-500',  tc:'bg-green-100 text-green-800'  },
+                  { init:'KP', name:'Komal Patel',    meta:'Patna · 3K',      score:612, tier:'Champion', sc:'text-yellow-500', tc:'bg-yellow-100 text-yellow-800' },
+                  { init:'AS', name:'Arun Singh',     meta:'Bengaluru · 21K', score:490, tier:'Achiever', sc:'text-orange-500', tc:'bg-orange-100 text-orange-800' },
                 ].map(r => (
                   <div key={r.name} className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center
