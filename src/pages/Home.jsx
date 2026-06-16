@@ -57,16 +57,25 @@ function ScoreGauge() {
 }
 
 export default function Home() {
-  const [query,   setQuery]   = useState('')
-  const [results, setResults] = useState([])
+  const [query,        setQuery]   = useState('')
+  const [bottomQuery,  setBottomQuery] = useState('')
+  const [results,      setResults] = useState([])
+  const [bottomResults,setBottomResults] = useState([])
   const navigate = useNavigate()
   const timer    = useRef(null)
+  const bottomTimer = useRef(null)
 
   useEffect(() => {
     clearTimeout(timer.current)
     if (query.length < 2) { setResults([]); return }
     timer.current = setTimeout(() => setResults(searchRunners(query)), 200)
   }, [query])
+
+  useEffect(() => {
+    clearTimeout(bottomTimer.current)
+    if (bottomQuery.length < 2) { setBottomResults([]); return }
+    bottomTimer.current = setTimeout(() => setBottomResults(searchRunners(bottomQuery)), 200)
+  }, [bottomQuery])
 
   const showCantFind = query.length >= 2
 
@@ -120,7 +129,7 @@ export default function Home() {
 
       <div className="max-w-lg mx-auto px-4">
 
-        {/* SEARCH RESULTS */}
+        {/* SEARCH RESULTS — top */}
         {results.length > 0 && (
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mt-3 mb-4">
             {results.map((r, i) => (
@@ -306,18 +315,60 @@ export default function Home() {
               </div>
             </div>
 
-            {/* FINAL CTA */}
+            {/* FINAL CTA — with duplicate search bar */}
             <div className="bg-blue-700 rounded-2xl p-6 text-center mb-6">
               <p className="text-lg font-bold text-white mb-2">Find your running score today</p>
               <p className="text-sm text-blue-200 mb-5 leading-relaxed">
-                Search your name above. If you don't find yourself, submit your BIB number and we'll add you within 24 hours.
+                Every Indian runner has a score waiting. Search your name and find yours.
               </p>
-              <button
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="inline-flex items-center gap-2 bg-white text-blue-700 text-sm
-                           font-semibold px-6 py-3 rounded-xl hover:bg-blue-50 transition-colors">
-                🔍 Search my name
-              </button>
+
+              {/* DUPLICATE SEARCH BAR */}
+              <div className="relative max-w-md mx-auto mb-3">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">🔍</span>
+                <input
+                  type="text"
+                  value={bottomQuery}
+                  onChange={e => setBottomQuery(e.target.value)}
+                  placeholder="Search your name…"
+                  className="w-full pl-11 pr-4 py-4 bg-white rounded-2xl text-slate-800
+                             placeholder-slate-400 text-base shadow-lg border-0
+                             focus:outline-none focus:ring-2 focus:ring-blue-300"
+                />
+              </div>
+
+              {/* BOTTOM SEARCH RESULTS */}
+              {bottomResults.length > 0 && (
+                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-3 text-left">
+                  {bottomResults.map((r, i) => (
+                    <button
+                      key={r.name}
+                      onClick={() => navigate(`/runner/${encodeURIComponent(r.name)}`)}
+                      className={`w-full text-left px-5 py-4 flex items-center justify-between
+                                  hover:bg-blue-50 transition-colors
+                                  ${i < bottomResults.length - 1 ? 'border-b border-slate-100' : ''}`}
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-800">{r.name}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {r.raceCount} {r.raceCount === 1 ? 'race' : 'races'} &nbsp;·&nbsp;
+                          Best {r.bestTime} &nbsp;·&nbsp; {r.cities}
+                        </p>
+                      </div>
+                      <span className="text-slate-300 text-xl">›</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {bottomQuery.length >= 2 && bottomResults.length === 0 && (
+                <p className="text-blue-200 text-sm mb-3">
+                  No runners found — <a href={BIB_FORM} target="_blank" rel="noreferrer" className="underline text-white">submit your BIB →</a>
+                </p>
+              )}
+
+              <p className="text-blue-300 text-xs">
+                ✓ Free forever · No login required
+              </p>
             </div>
           </>
         )}
