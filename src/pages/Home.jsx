@@ -102,9 +102,13 @@ export default function Home() {
           <h1 className="text-3xl font-bold text-white leading-tight mb-3">
             Your Running Score,<br/>in your hands.
           </h1>
+
+          {/* CHANGED: removed "Every Indian marathon finisher" — replaced with honest + aspirational copy */}
           <p className="text-blue-200 text-sm leading-relaxed mb-2 max-w-sm mx-auto">
-            Every Indian marathon finisher has a score between 300 and 900 — based on verified race results, not self-reported data.
+            India's running score platform — built on real race results.
+            No self-reporting. No guessing. {totalRunners().toLocaleString()}+ runners scored and growing.
           </p>
+
           <p className="text-blue-300 text-xs mb-6">
             ✓ Searching your name is free and always will be.
           </p>
@@ -238,12 +242,12 @@ export default function Home() {
               </div>
             </div>
 
-            {/* STATS */}
+            {/* STATS — CHANGED: reframed labels to show momentum not limitation */}
             <div className="grid grid-cols-3 gap-3 mb-5">
               {[
                 { num:`${totalRunners().toLocaleString()}+`, label:'Runners scored' },
-                { num:'3',       label:'Cities covered' },
-                { num:'300–900', label:'Score range' },
+                { num:'3',         label:'Cities · growing' },
+                { num:'300–900',   label:'Score range'      },
               ].map(s => (
                 <div key={s.label} className="bg-slate-50 rounded-2xl py-4 px-2 text-center">
                   <div className="text-lg font-bold text-blue-700">{s.num}</div>
@@ -275,7 +279,7 @@ export default function Home() {
             </p>
             <div className="space-y-3 mb-5">
               {[
-                { e:'🗂️', t:'Verified race data only',    d:'Finish times from official chip-timed Indian marathon results. No self-reporting, no guessing.' },
+                { e:'🗂️', t:'Verified race data only',    d:'Built on real race results from Indian running events. No self-reporting, no guessing.' },
                 { e:'📊', t:'7 performance KPIs',         d:'Finish time, consistency, improvement trend, personal bests, race variety, cities, and active streak.' },
                 { e:'✅', t:'Claim and own your profile', d:"Verify it's you, accept consent, and get a Verified badge. Your score is officially yours." },
               ].map(s => (
@@ -294,13 +298,13 @@ export default function Home() {
               <p className="text-sm font-semibold text-slate-700 mb-4">Score breakdown — 7 KPIs</p>
               <div className="space-y-3">
                 {[
-                  { icon:'⏱️', name:'Finish time',    desc:'Age-graded',    pct: 25 },
-                  { icon:'🏆', name:'Total finishes', desc:'Race count',     pct: 20 },
-                  { icon:'📈', name:'Improvement',    desc:'Trend',          pct: 15 },
-                  { icon:'📅', name:'Consistency',    desc:'Races/year',     pct: 15 },
-                  { icon:'🥇', name:'Personal best',  desc:'Best time',      pct: 10 },
-                  { icon:'🗺️', name:'Race variety',   desc:'Distances/cities', pct: 10 },
-                  { icon:'🔥', name:'Active streak',  desc:'Years running',  pct:  5 },
+                  { icon:'⏱️', name:'Finish time',    desc:'Age-graded',       pct: 25 },
+                  { icon:'🏆', name:'Total finishes', desc:'Race count',        pct: 20 },
+                  { icon:'📈', name:'Improvement',    desc:'Trend',             pct: 15 },
+                  { icon:'📅', name:'Consistency',    desc:'Races/year',        pct: 15 },
+                  { icon:'🥇', name:'Personal best',  desc:'Best time',         pct: 10 },
+                  { icon:'🗺️', name:'Race variety',   desc:'Distances/cities',  pct: 10 },
+                  { icon:'🔥', name:'Active streak',  desc:'Years running',     pct:  5 },
                 ].map(k => (
                   <div key={k.name} className="flex items-center gap-3">
                     <span className="text-base w-6 flex-shrink-0">{k.icon}</span>
