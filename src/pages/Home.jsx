@@ -57,12 +57,12 @@ function ScoreGauge() {
 }
 
 export default function Home() {
-  const [query,        setQuery]   = useState('')
-  const [bottomQuery,  setBottomQuery] = useState('')
-  const [results,      setResults] = useState([])
-  const [bottomResults,setBottomResults] = useState([])
-  const navigate = useNavigate()
-  const timer    = useRef(null)
+  const [query,         setQuery]        = useState('')
+  const [bottomQuery,   setBottomQuery]  = useState('')
+  const [results,       setResults]      = useState([])
+  const [bottomResults, setBottomResults]= useState([])
+  const navigate    = useNavigate()
+  const timer       = useRef(null)
   const bottomTimer = useRef(null)
 
   useEffect(() => {
@@ -289,20 +289,39 @@ export default function Home() {
               ))}
             </div>
 
-            {/* KPI GRID */}
-            <div className="grid grid-cols-2 gap-3 mb-5">
-              {[
-                { icon:'⏱️', name:'Finish time',   w:'Age-graded · 25%' },
-                { icon:'🏆', name:'Total finishes', w:'Race count · 20%' },
-                { icon:'📈', name:'Improvement',    w:'Trend · 15%'      },
-                { icon:'📅', name:'Consistency',    w:'Races/year · 15%' },
-              ].map(k => (
-                <div key={k.name} className="bg-slate-50 rounded-xl p-3">
-                  <div className="text-lg mb-1">{k.icon}</div>
-                  <div className="text-sm font-semibold text-slate-700">{k.name}</div>
-                  <div className="text-xs text-slate-400 mt-0.5">{k.w}</div>
-                </div>
-              ))}
+            {/* KPI FULL BREAKDOWN — all 7, adds to 100% */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-5 shadow-sm">
+              <p className="text-sm font-semibold text-slate-700 mb-4">Score breakdown — 7 KPIs</p>
+              <div className="space-y-3">
+                {[
+                  { icon:'⏱️', name:'Finish time',    desc:'Age-graded',    pct: 25 },
+                  { icon:'🏆', name:'Total finishes', desc:'Race count',     pct: 20 },
+                  { icon:'📈', name:'Improvement',    desc:'Trend',          pct: 15 },
+                  { icon:'📅', name:'Consistency',    desc:'Races/year',     pct: 15 },
+                  { icon:'🥇', name:'Personal best',  desc:'Best time',      pct: 10 },
+                  { icon:'🗺️', name:'Race variety',   desc:'Distances/cities', pct: 10 },
+                  { icon:'🔥', name:'Active streak',  desc:'Years running',  pct:  5 },
+                ].map(k => (
+                  <div key={k.name} className="flex items-center gap-3">
+                    <span className="text-base w-6 flex-shrink-0">{k.icon}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-slate-700">{k.name}</span>
+                        <span className="text-xs font-bold text-blue-600">{k.pct}%</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500 rounded-full"
+                          style={{ width: `${k.pct * 4}%` }}/>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-0.5">{k.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+                <span className="text-xs text-slate-500">Total</span>
+                <span className="text-xs font-bold text-green-600">100% ✅</span>
+              </div>
             </div>
 
             {/* DATA SOURCES */}
