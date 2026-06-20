@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { getRunnerResults, fmtTime } from '../data/useData.js'
+import { getRunnerResults, fmtTime, getRunnerLabel } from '../data/useData.js'
 import { calculateScore } from '../scoring/calculator.js'
 
 const TIER_COLOR = { 
@@ -206,6 +206,7 @@ export default function Profile() {
   const rpy       = (raceCount / Math.max(years.length,1)).toFixed(1)
   const ubib      = results[0]?.ubib || null
   const sinceYear = Math.min(...years)
+  const runnerLabel = getRunnerLabel(results)
 
   let trendPct = null
   if (sorted.length >= 2) {
@@ -246,7 +247,14 @@ export default function Profile() {
           <ScoreGauge score={score}/>
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold text-slate-800 truncate">{decoded}</h1>
-            <p className="text-sm text-slate-500 mt-0.5">{cities.join(' · ')} · Since {sinceYear}</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <p className="text-sm text-slate-500">{cities.join(' · ')} · Since {sinceYear}</p>
+              {runnerLabel && (
+                <span className="inline-flex items-center gap-0.5 text-xs font-medium text-slate-400 flex-shrink-0">
+                  · {runnerLabel === 'Club Runner' ? '👥' : '🏃'} {runnerLabel}
+                </span>
+              )}
+            </div>
             {ubib && (
               <div className="mt-2 inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-lg">
                 <span>🪪</span><span>{ubib}</span>

@@ -52,6 +52,17 @@ export function getRunnerResults(name) {
   return null
 }
 
+// Determine if a runner is a "Race Runner" or "Club Runner".
+// A runner becomes (and stays) a Race Runner the moment they have
+// ANY entry with source !== "club" — i.e. an official race result.
+// Missing `source` field (all 1,375 existing entries) defaults to
+// "race" behavior, so this needs zero migration on existing data.
+export function getRunnerLabel(results) {
+  if (!results || !results.length) return null
+  const hasRace = results.some(r => !r.source || r.source === 'race')
+  return hasRace ? 'Race Runner' : 'Club Runner'
+}
+
 export function fmtTime(sec) {
   if (!sec) return '--:--'
   const h = Math.floor(sec / 3600)
